@@ -10,4 +10,8 @@ RSpec.describe MenuItem, type: :model do
     expect(menu_item.name).to eq('Chana Masala')
     expect(menu_item.price).to eq(12.99)
   end
+
+  it 'belongs to a menu' do
+    should belong_to(:menu)
+  end
 end

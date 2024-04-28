@@ -40,6 +40,7 @@ group :development, :test do
   gem 'debug', platforms: %i[mri mswin mswin64 mingw x64_mingw]
   gem 'rspec-rails', '~> 5.0'
   gem 'rubocop', require: false
+  gem 'shoulda-matchers', '~> 5.0'
   gem 'syntax_tree', require: false
 end
 
