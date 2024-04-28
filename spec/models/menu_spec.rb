@@ -10,8 +10,18 @@ RSpec.describe Menu, type: :model do
     expect(menu.name).to eq('Lunch')
   end
 
-  it 'has many menu_items' do
-    should have_many(:menu_items).dependent(:destroy)
+  describe 'associations' do
+    it 'has many menu_items' do
+      menu = Menu.create(name: 'Breakfast')
+      menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
+      expect(menu.menu_items.size).to eq(1)
+    end
+
+    it 'destroys menu_items when destroyed' do
+      menu = Menu.create(name: 'Breakfast')
+      menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
+      expect { menu.destroy }.to change(MenuItem, :count).by(-1)
+    end
   end
 
   describe 'dependencies' do
