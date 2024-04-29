@@ -25,27 +25,35 @@ RSpec.describe Menu, type: :model do
   end
 
   describe 'associations' do
+    before(:each) do
+      @restaurant = Restaurant.create(name: 'East Pole Coffee')
+      @menu = @restaurant.menus.create(name: 'Hot Coffees')
+    end
+    
+    it 'belongs to a restaurant' do
+      expect(@menu.restaurant).to eq(@restaurant)
+    end
+    
     it 'has many menu_items' do
-      menu = Menu.create(name: 'Breakfast')
-      menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
-      expect(menu.menu_items.size).to eq(1)
+      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
+      expect(@menu.menu_items.size).to eq(1)
     end
 
     it 'destroys menu_items when destroyed' do
-      menu = Menu.create(name: 'Breakfast')
-      menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
-      expect { menu.destroy }.to change(MenuItem, :count).by(-1)
+      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
+      expect { @menu.destroy }.to change(MenuItem, :count).by(-1)
     end
   end
 
   describe 'dependencies' do
-    let(:menu) { Menu.create(name: 'Breakfast') }
     before do
-      menu.menu_items.create(name: 'French Toast', price: 9.99)
+      @restaurant = Restaurant.create(name: 'East Pole Coffee')
+      @menu = @restaurant.menus.create(name: 'Hot Coffees')
+      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
     end
 
     it 'deletes associated menu_items when destroyed' do
-      expect { menu.destroy }.to change { MenuItem.count }.by(-1)
+      expect { @menu.destroy }.to change { MenuItem.count }.by(-1)
     end
   end
 end

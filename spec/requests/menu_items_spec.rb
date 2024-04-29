@@ -1,7 +1,8 @@
 require 'rails_helper'
 
 RSpec.describe "MenuItems", type: :request do
-  let!(:menu) { create(:menu, :lunch) }
+  let!(:restaurant) { create(:restaurant) }
+  let!(:menu) { create(:menu, :lunch, restaurant: restaurant) }
   let!(:menu_items) { create_list(:menu_item, 5, menu: menu) }
   let(:menu_id) { menu.id }
   let(:menu_item_id) { menu_items.first.id }

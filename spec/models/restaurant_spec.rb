@@ -23,4 +23,18 @@ RSpec.describe Restaurant, type: :model do
       expect(restaurant.errors[:name]).to include("is too long (maximum is 100 characters)")
     end
   end
+  
+  describe 'associations' do
+    it 'has many menus' do
+      restaurant = Restaurant.create(name: 'Surin of Thailand')
+      restaurant.menus.create(name: 'Dinner')
+      expect(restaurant.menus.size).to eq(1)
+    end
+
+    it 'destroys menus when destroyed' do
+      restaurant = Restaurant.create(name: 'Surin of Thailand')
+      restaurant.menus.create(name: 'Dinner')
+      expect { restaurant.destroy }.to change(Menu, :count).by(-1)
+    end
+  end
 end

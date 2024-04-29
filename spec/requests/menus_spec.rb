@@ -1,7 +1,12 @@
 require 'rails_helper'
 
 RSpec.describe 'Menus', type: :request do
-  let!(:menus) { [create(:menu, :lunch), create(:menu, :dinner), create(:menu, :drinks)] }
+  let!(:restaurant) { create(:restaurant) }
+  let!(:menus) { [
+    create(:menu, :lunch, restaurant: restaurant),
+    create(:menu, :dinner, restaurant: restaurant),
+    create(:menu, :drinks, restaurant: restaurant)
+  ] }
   let(:menu_id) { menus.first.id }
   
   before do
@@ -56,7 +61,7 @@ RSpec.describe 'Menus', type: :request do
   end
   
   describe 'POST /menus' do
-    let(:valid_attributes) { { menu: { name: 'Breakfast' } } }
+    let(:valid_attributes) { { menu: { name: 'Breakfast', restaurant_id: 1 } } }
 
     context 'when the request is valid' do
       before { post '/menus', params: valid_attributes }
