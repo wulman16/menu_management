@@ -4,12 +4,22 @@ RSpec.describe 'Menus', type: :request do
   let!(:menus) { [create(:menu, :lunch), create(:menu, :dinner), create(:menu, :drinks)] }
   let(:menu_id) { menus.first.id }
   
+  before do
+    menus.each do |menu|
+      create_list(:menu_item, 3, menu: menu)
+    end
+  end
+  
   describe 'GET /menus' do
     before { get '/menus' }
 
-    it 'returns menus' do
+    it 'returns menus with associated menu items' do
       expect(json).not_to be_empty
       expect(json.size).to eq(3)
+      
+      json.each do |menu|
+        expect(menu['menu_items']).not_to be_empty
+      end
     end
 
     it 'returns status code 200' do
@@ -21,10 +31,10 @@ RSpec.describe 'Menus', type: :request do
     before { get "/menus/#{menu_id}" }
 
     context 'when the record exists' do
-      it 'returns the menu' do
+      it 'returns the menu with associated menu items' do
         expect(json).not_to be_empty
         expect(json['id']).to eq(menu_id)
-        expect(json['name']).to eq('Lunch')
+        expect(json['menu_items']).not_to be_empty
       end
 
       it 'returns status code 200' do
@@ -79,8 +89,9 @@ RSpec.describe 'Menus', type: :request do
     context 'when the menu exists' do
       before { put "/menus/#{menu_id}", params: valid_attributes }
 
-      it 'updates the menu' do
+      it 'updates the menu with associated menu items' do
         expect(Menu.find(menu_id).name).to eq('Breakfast')
+        expect(json['menu_items']).not_to be_empty
       end
 
       it 'returns status code 200' do

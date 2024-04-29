@@ -3,11 +3,11 @@ class MenusController < ApplicationController
   
   def index
     @menus = Menu.all
-    render json: @menus
+    render json: @menus, include: :menu_items
   end
   
   def show
-    render json: @menu
+    render json: @menu, include: :menu_items
   end
   
   def create
@@ -21,7 +21,7 @@ class MenusController < ApplicationController
   
   def update
     if @menu.update(menu_params)
-      render json: @menu
+      render json: @menu, include: :menu_items
     else
       render json: @menu.errors, status: :unprocessable_entity
     end
