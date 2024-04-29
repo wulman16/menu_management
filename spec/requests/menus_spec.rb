@@ -115,4 +115,32 @@ RSpec.describe 'Menus', type: :request do
       end
     end
   end
+  
+  describe 'DELETE /menus/:id' do
+    context 'when the menu exists' do
+      before { delete "/menus/#{menu_id}" }
+
+      it 'deletes the menu' do
+        expect(Menu.exists?(menu_id)).to be_falsey
+      end
+
+      it 'returns status code 204' do
+        expect(response).to have_http_status(204)
+      end
+    end
+
+    context 'when the menu does not exist' do
+      let(:menu_id) { 0 }
+
+      before { delete "/menus/#{menu_id}" }
+
+      it 'returns status code 404' do
+        expect(response).to have_http_status(404)
+      end
+
+      it 'returns a not found message' do
+        expect(response.body).to match(/Couldn't find Menu/)
+      end
+    end
+  end
 end

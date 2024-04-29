@@ -1,5 +1,5 @@
 class MenusController < ApplicationController
-  before_action :set_menu, only: [:show, :update]
+  before_action :set_menu, only: [:show, :update, :destroy]
   
   def index
     @menus = Menu.all
@@ -25,6 +25,11 @@ class MenusController < ApplicationController
     else
       render json: @menu.errors, status: :unprocessable_entity
     end
+  end
+  
+  def destroy
+    @menu.destroy
+    head :no_content
   end
   
   private
