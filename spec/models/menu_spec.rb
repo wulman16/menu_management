@@ -9,6 +9,20 @@ RSpec.describe Menu, type: :model do
     menu = Menu.new(name: 'Lunch')
     expect(menu.name).to eq('Lunch')
   end
+  
+  describe 'validations' do
+    it 'validates presence of name' do
+      menu = Menu.new(name: nil)
+      expect(menu.valid?).to be false
+      expect(menu.errors[:name]).to include("can't be blank")
+    end
+
+    it 'validates length of name' do
+      menu = Menu.new(name: 'a' * 101)
+      expect(menu.valid?).to be false
+      expect(menu.errors[:name]).to include("is too long (maximum is 100 characters)")
+    end
+  end
 
   describe 'associations' do
     it 'has many menu_items' do
