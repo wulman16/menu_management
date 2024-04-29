@@ -44,4 +44,33 @@ RSpec.describe "MenuItems", type: :request do
       end
     end
   end
+  
+  describe 'POST /menus/:menu_id/menu_items' do
+    let(:valid_attributes) { { menu_item: { name: 'Black Bean Burger', description: 'A savory patty with lettuce, tomato, and onion', price: 9.99 } } }
+  
+    context 'when the request is valid' do
+      before { post "/menus/#{menu_id}/menu_items", params: valid_attributes }
+  
+      it 'creates a menu item' do
+        expect(json['name']).to eq('Black Bean Burger')
+      end
+  
+      it 'returns status code 201' do
+        expect(response).to have_http_status(201)
+      end
+    end
+  
+    context 'when the request is invalid' do
+      before { post "/menus/#{menu_id}/menu_items", params: { menu_item: { name: 'Black Bean Burger' } } }  # Missing price
+  
+      it 'returns status code 422' do
+        expect(response).to have_http_status(422)
+      end
+  
+      it 'returns a validation failure message' do
+        expect(json['price']).to include("can't be blank")
+        expect(json['price']).to include("is not a number")
+      end
+    end
+  end
 end
