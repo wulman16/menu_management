@@ -44,4 +44,32 @@ RSpec.describe 'Menus', type: :request do
       end
     end
   end
+  
+  describe 'POST /menus' do
+    let(:valid_attributes) { { menu: { name: 'Breakfast' } } }
+
+    context 'when the request is valid' do
+      before { post '/menus', params: valid_attributes }
+
+      it 'creates a menu' do
+        expect(json['name']).to eq('Breakfast')
+      end
+
+      it 'returns status code 201' do
+        expect(response).to have_http_status(201)
+      end
+    end
+
+    context 'when the request is invalid' do
+      before { post '/menus', params: { menu: { name: '' } } }
+
+      it 'returns status code 422' do
+        expect(response).to have_http_status(422)
+      end
+
+      it 'returns a validation failure message' do
+        expect(json['name']).to include("can't be blank")
+      end
+    end
+  end
 end
