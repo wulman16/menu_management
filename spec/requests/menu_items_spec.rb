@@ -123,4 +123,31 @@ RSpec.describe "MenuItems", type: :request do
       end
     end
   end
+  
+  describe 'DELETE /menus/:menu_id/menu_items/:menu_item_id' do
+    context 'when the menu item exists' do
+      before { delete "/menus/#{menu_id}/menu_items/#{menu_item_id}" }
+  
+      it 'deletes the record' do
+        expect(Menu.find(menu_id).menu_items).not_to include(menu_item_id)
+      end
+  
+      it 'returns status code 204' do
+        expect(response).to have_http_status(204)
+      end
+    end
+  
+    context 'when the menu item does not exist' do
+      let(:menu_item_id) { 0 }
+      before { delete "/menus/#{menu_id}/menu_items/#{menu_item_id}" }
+  
+      it 'returns status code 404' do
+        expect(response).to have_http_status(404)
+      end
+  
+      it 'returns a not found message' do
+        expect(response.body).to match(/Couldn't find MenuItem/)
+      end
+    end
+  end
 end
