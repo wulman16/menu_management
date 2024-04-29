@@ -2,9 +2,22 @@ require 'rails_helper'
 
 RSpec.describe "MenuItems", type: :request do
   let!(:menu) { create(:menu, :lunch) }
-  let!(:menu_items) { create_list(:menu_item, 20, menu: menu) }
+  let!(:menu_items) { create_list(:menu_item, 5, menu: menu) }
   let(:menu_id) { menu.id }
   let(:menu_item_id) { menu_items.first.id }
+  
+  describe 'GET /menus/:menu_id/menu_items' do
+    before { get "/menus/#{menu_id}/menu_items" }
+
+    it 'returns menu items' do
+      expect(json).not_to be_empty
+      expect(json.length).to eq(5)
+    end
+
+    it 'returns status code 200' do
+      expect(response).to have_http_status(200)
+    end
+  end
   
   describe 'GET /menus/:menu_id/menu_items/:menu_item_id' do
     before { get "/menus/#{menu_id}/menu_items/#{menu_item_id}" }
