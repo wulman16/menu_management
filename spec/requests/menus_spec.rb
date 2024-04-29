@@ -1,8 +1,21 @@
 require 'rails_helper'
 
 RSpec.describe 'Menus', type: :request do
-  let!(:menu) { create(:menu) }
-  let(:menu_id) { menu.id }
+  let!(:menus) { [create(:menu, :lunch), create(:menu, :dinner), create(:menu, :drinks)] }
+  let(:menu_id) { menus.first.id }
+  
+  describe 'GET /menus' do
+    before { get '/menus' }
+
+    it 'returns menus' do
+      expect(json).not_to be_empty
+      expect(json.size).to eq(3)
+    end
+
+    it 'returns status code 200' do
+      expect(response).to have_http_status(200)
+    end
+  end
 
   describe 'GET /menus/:id' do
     before { get "/menus/#{menu_id}" }
@@ -11,6 +24,7 @@ RSpec.describe 'Menus', type: :request do
       it 'returns the menu' do
         expect(json).not_to be_empty
         expect(json['id']).to eq(menu_id)
+        expect(json['name']).to eq('Lunch')
       end
 
       it 'returns status code 200' do
