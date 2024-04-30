@@ -128,8 +128,8 @@ RSpec.describe 'Restaurants', type: :request do
         expect(Menu.exists?(menu1.id)).to be_falsey
       end
 
-      it 'deletes menu items exclusive to the deleted restaurant' do
-        expect(MenuItem.exists?(menu_item1.id)).to be_falsey
+      it 'does not delete menu items exclusive to the deleted restaurant' do
+        expect(MenuItem.exists?(menu_item1.id)).to be_truthy
       end
 
       it 'does not delete shared menu items still linked to active restaurants' do

@@ -1,26 +1,16 @@
+# spec/requests/menu_items_spec.rb
 require 'rails_helper'
 
 RSpec.describe 'MenuItems', type: :request do
-  let!(:restaurant) { create(:restaurant) }
-  let!(:menu) { create(:menu, :lunch, restaurant:) }
-  let!(:second_menu) { create(:menu, :dinner, restaurant:) }
-  let(:menu_id) { menu.id }
-  let(:second_menu_id) { second_menu.id }
-  let(:menu_items) { create_list(:menu_item, 3) }
+  let!(:menu_items) { create_list(:menu_item, 3) }
   let(:menu_item_id) { menu_items.first.id }
 
-  before do
-    menu_items.each do |menu_item|
-      create(:menu_entry, menu:, menu_item:)
-    end
-  end
+  describe 'GET /menu_items' do
+    before { get '/menu_items' }
 
-  describe 'GET /restaurants/:id/menus/:id/menu_items' do
-    before { get "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items" }
-
-    it 'returns menu items' do
+    it 'returns menu_items' do
       expect(json).not_to be_empty
-      expect(json.length).to eq(3)
+      expect(json.size).to eq(3)
     end
 
     it 'returns status code 200' do
@@ -28,21 +18,22 @@ RSpec.describe 'MenuItems', type: :request do
     end
   end
 
-  describe 'GET /restaurants/:id/menus/:id/menu_items/:id' do
-    before { get "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}" }
+  describe 'GET /menu_items/:id' do
+    before { get "/menu_items/#{menu_item_id}" }
 
-    context 'when menu item exists' do
+    context 'when the record exists' do
+      it 'returns the menu_item' do
+        expect(json).not_to be_empty
+        expect(json['id']).to eq(menu_item_id)
+      end
+
       it 'returns status code 200' do
         expect(response).to have_http_status(200)
       end
-
-      it 'returns the item' do
-        expect(json['id']).to eq(menu_item_id)
-      end
     end
 
-    context 'when the menu item does not exist' do
-      let(:menu_item_id) { 0 }
+    context 'when the record does not exist' do
+      let(:menu_item_id) { 100 }
 
       it 'returns status code 404' do
         expect(response).to have_http_status(404)
@@ -54,17 +45,14 @@ RSpec.describe 'MenuItems', type: :request do
     end
   end
 
-  describe 'POST /restaurants/:id/menus/:id/menu_items' do
-    let(:valid_attributes) do
-      { menu_item: { name: 'Black Bean Burger', description: 'A savory patty with lettuce, tomato, and onion',
-                     price: 9.99 } }
-    end
+  describe 'POST /menu_items' do
+    let(:valid_attributes) { { name: 'New Dish', description: 'Delicious new item' } }
 
     context 'when the request is valid' do
-      before { post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes }
+      before { post '/menu_items', params: { menu_item: valid_attributes } }
 
       it 'creates a menu item' do
-        expect(json['name']).to eq('Black Bean Burger')
+        expect(json['name']).to eq('New Dish')
       end
 
       it 'returns status code 201' do
@@ -73,78 +61,42 @@ RSpec.describe 'MenuItems', type: :request do
     end
 
     context 'when the request is invalid' do
-      # Missing price
-      before do
-        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items",
-             params: { menu_item: { name: 'Black Bean Burger' } }
-      end
+      before { post '/menu_items', params: { menu_item: { name: '' } } }
+
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
       end
 
       it 'returns a validation failure message' do
-        expect(json['price']).to include("can't be blank")
-        expect(json['price']).to include('is not a number')
-      end
-    end
-
-    context 'when the menu item already exists on another menu' do
-      before do
-        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
-        post "/restaurants/#{restaurant.id}/menus/#{second_menu_id}/menu_items", params: valid_attributes
-      end
-
-      it 'associates the existing menu item with the new menu' do
-        expect(json['name']).to eq('Black Bean Burger')
-        expect(Menu.find(second_menu_id).menu_items).to include(MenuItem.find_by(name: 'Black Bean Burger'))
-      end
-    end
-
-    context 'when the menu item already exists on the same menu' do
-      before do
-        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
-        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
-      end
-
-      it 'returns status code 409' do
-        expect(response).to have_http_status(409)
-      end
-
-      it 'returns an error message indicating the menu item already exists on the menu' do
-        expect(json['error']).to eq('Menu item already exists on this menu.')
+        expect(json['name']).to include("can't be blank")
       end
     end
   end
 
-  describe 'PUT /restaurants/:id/menus/:id/menu_items/:id' do
-    let(:valid_attributes) { { menu_item: { name: 'Quinoa Burger', price: 11.99 } } }
+  describe 'PUT /menu_items/:id' do
+    let(:valid_attributes) { { name: 'Updated Dish', description: 'Updated description' } }
 
-    context 'when the menu item exists' do
-      before do
-        put "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}", params: valid_attributes
-      end
+    context 'when the record exists' do
+      before { put "/menu_items/#{menu_item_id}", params: { menu_item: valid_attributes } }
 
       it 'updates the record' do
-        updated_item = JSON.parse(response.body)
-        expect(updated_item['name']).to eq('Quinoa Burger')
-        expect(updated_item['price']).to eq('11.99')
-      end
-
-      it 'returns the updated menu item' do
-        expect(response.body).to include('Quinoa Burger')
-        expect(response.body).to include('11.99')
+        updated_item = MenuItem.find(menu_item_id)
+        expect(updated_item.name).to match('Updated Dish')
+        expect(updated_item.description).to match('Updated description')
       end
 
       it 'returns status code 200' do
         expect(response).to have_http_status(200)
       end
+
+      it 'returns the updated menu item' do
+        expect(json['name']).to eq('Updated Dish')
+        expect(json['description']).to eq('Updated description')
+      end
     end
 
-    context 'when the menu item does not exist' do
-      let(:menu_item_id) { 0 }
-      before do
-        put "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}", params: valid_attributes
-      end
+    context 'when the record does not exist' do
+      before { put '/menu_items/0', params: { menu_item: valid_attributes } }
 
       it 'returns status code 404' do
         expect(response).to have_http_status(404)
@@ -155,10 +107,11 @@ RSpec.describe 'MenuItems', type: :request do
       end
     end
 
-    context 'with invalid attributes' do
-      let(:invalid_attributes) { { menu_item: { name: '', price: '' } } }
-      before do
-        put "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}", params: invalid_attributes
+    context 'when the request is invalid' do
+      before { put "/menu_items/#{menu_item_id}", params: { menu_item: { name: '' } } }
+
+      it 'does not update the menu item' do
+        expect(MenuItem.find(menu_item_id).name).not_to eq('')
       end
 
       it 'returns status code 422' do
@@ -167,27 +120,42 @@ RSpec.describe 'MenuItems', type: :request do
 
       it 'returns a validation failure message' do
         expect(json['name']).to include("can't be blank")
-        expect(json['price']).to include("can't be blank")
       end
     end
   end
 
-  describe 'DELETE /restaurants/:id/menus/:id/menu_items/:id' do
-    context 'when the menu item exists' do
-      before { delete "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}" }
+  describe 'DELETE /menu_items/:id' do
+    let(:restaurant) { create(:restaurant) }
+    let(:menu) { create(:menu, :lunch, restaurant:) }
+    let(:another_menu) { create(:menu, :dinner, restaurant:) }
 
-      it 'deletes the record' do
-        expect(Menu.find(menu_id).menu_items).not_to include(menu_item_id)
+    context 'when the record exists' do
+      let!(:menu_entry) { create(:menu_entry, menu:, menu_item: menu_items.first) }
+
+      context 'and is linked to a menu' do
+        it 'does not delete the menu item and returns a conflict status' do
+          expect do
+            delete "/menu_items/#{menu_items.first.id}"
+          end.to_not change(MenuItem, :count)
+          expect(response).to have_http_status(:conflict)
+          expect(response.body).to match(/Menu item is still associated with one or more menus/)
+        end
       end
 
-      it 'returns status code 204' do
-        expect(response).to have_http_status(204)
+      context 'and is not linked to any menu' do
+        before { menu_entry.destroy }
+
+        it 'deletes the menu item' do
+          expect do
+            delete "/menu_items/#{menu_items.first.id}"
+          end.to change(MenuItem, :count).by(-1)
+          expect(response).to have_http_status(204)
+        end
       end
     end
 
-    context 'when the menu item does not exist' do
-      let(:menu_item_id) { 0 }
-      before { delete "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items/#{menu_item_id}" }
+    context 'when the record does not exist' do
+      before { delete '/menu_items/0' }
 
       it 'returns status code 404' do
         expect(response).to have_http_status(404)

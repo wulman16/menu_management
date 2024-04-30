@@ -4,17 +4,17 @@ class MenusController < ApplicationController
 
   def index
     @menus = @restaurant.menus
-    render json: @menus
+    render json: format_json(@menus)
   end
 
   def show
-    render json: @menu, include: :menu_items
+    render json: format_json(@menu)
   end
 
   def create
     @menu = @restaurant.menus.new(menu_params)
     if @menu.save
-      render json: @menu, status: :created, location: [@restaurant, @menu]
+      render json: format_json(@menu), status: :created, location: [@restaurant, @menu]
     else
       render json: @menu.errors, status: :unprocessable_entity
     end
@@ -22,18 +22,13 @@ class MenusController < ApplicationController
 
   def update
     if @menu.update(menu_params)
-      render json: @menu, include: :menu_items
+      render json: format_json(@menu), status: :ok
     else
       render json: @menu.errors, status: :unprocessable_entity
     end
   end
 
   def destroy
-    # Delete menu items not associated with any other menus
-    @menu.menu_items.each do |menu_item|
-      menu_item.destroy if menu_item.menus.count == 1
-    end
-
     @menu.destroy
     head :no_content
   end
@@ -50,5 +45,18 @@ class MenusController < ApplicationController
 
   def menu_params
     params.require(:menu).permit(:name)
+  end
+
+  def format_json(menu)
+    menu.as_json(include: {
+                   menu_entries: {
+                     include: {
+                       menu_item: {
+                         only: %i[id name description]
+                       }
+                     },
+                     only: %i[id price]
+                   }
+                 })
   end
 end

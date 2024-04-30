@@ -10,22 +10,21 @@ restaurants = restaurant_names.map do |name|
 end
 
 menu_item_attributes = [
-  { name: 'Pancakes', description: 'Delicious fluffy pancakes served with maple syrup.', price: 5.99 },
-  { name: 'Black Bean Burger', description: 'Classic savory burger with lettuce, tomato, and onion.', price: 8.99 },
-  { name: 'Salad', description: 'Fresh garden salad with mixed greens and balsamic vinaigrette.', price: 6.49 }
+  { name: 'Pancakes', description: 'Delicious fluffy pancakes served with maple syrup.' },
+  { name: 'Black Bean Burger', description: 'Classic savory burger with lettuce, tomato, and onion.' },
+  { name: 'Salad', description: 'Fresh garden salad with mixed greens and balsamic vinaigrette.' }
 ]
 
 menu_items = menu_item_attributes.map do |attrs|
   MenuItem.find_or_create_by(name: attrs[:name]) do |item|
     item.description = attrs[:description]
-    item.price = attrs[:price]
   end
 end
 
 restaurants.each do |restaurant|
   restaurant.menus.each do |menu|
     menu_items.each do |item|
-      MenuEntry.find_or_create_by(menu:, menu_item: item)
+      MenuEntry.find_or_create_by(menu:, menu_item: item, price: rand(500..2000) / 100.0)
     end
   end
 end

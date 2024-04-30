@@ -36,11 +36,11 @@ RSpec.describe 'Menus', type: :request do
     before { get "/restaurants/#{restaurant.id}/menus/#{menu_id}" }
 
     context 'when the record exists' do
-      it 'returns the menu with associated menu items' do
+      it 'returns the menu with associated menu entries' do
         expect(json).not_to be_empty
         expect(json['id']).to eq(menu_id)
-        expect(json['menu_items']).not_to be_empty
-        expect(json['menu_items'].size).to eq(3)
+        expect(json['menu_entries']).not_to be_empty
+        expect(json['menu_entries'].size).to eq(3)
       end
 
       it 'returns status code 200' do
@@ -97,7 +97,7 @@ RSpec.describe 'Menus', type: :request do
 
       it 'updates the menu with associated menu items' do
         expect(Menu.find(menu_id).name).to eq('Breakfast')
-        expect(json['menu_items']).not_to be_empty
+        expect(json['menu_entries']).not_to be_empty
       end
 
       it 'returns status code 200' do
@@ -147,12 +147,9 @@ RSpec.describe 'Menus', type: :request do
         expect(Menu.exists?(menu_id)).to be_falsey
       end
 
-      it 'deletes menu items not associated with any other menus' do
-        expect(MenuItem.exists?(menu_item1.id)).to be_falsey
-      end
-
-      it 'does not delete menu items if they still exist on another menu' do
+      it 'does not delete menu items regardless of whether they still exist on a menu' do
         expect(MenuItem.exists?(menu_item2.id)).to be_truthy
+        expect(MenuItem.exists?(menu_item1.id)).to be_truthy
       end
 
       it 'returns status code 204' do

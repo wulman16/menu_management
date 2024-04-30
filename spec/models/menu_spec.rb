@@ -29,8 +29,8 @@ RSpec.describe Menu, type: :model do
       @restaurant = Restaurant.create(name: 'East Pole Coffee')
       @menu = @restaurant.menus.create(name: 'Hot Coffees')
       @menu_item = MenuItem.create(name: 'Strawberry Smoothie',
-                                   description: 'Frozen strawberries blended with orange juice and ginger', price: 7.99)
-      @menu.menu_entries.create(menu_item: @menu_item)
+                                   description: 'Frozen strawberries blended with orange juice and ginger')
+      @menu.menu_entries.create(menu_item: @menu_item, price: 7.99)
     end
 
     it 'belongs to a restaurant' do
@@ -51,8 +51,8 @@ RSpec.describe Menu, type: :model do
       @restaurant = Restaurant.create(name: 'East Pole Coffee')
       @menu = @restaurant.menus.create(name: 'Hot Coffees')
       @menu_item = MenuItem.create(name: 'Strawberry Smoothie',
-                                   description: 'Frozen strawberries blended with orange juice and ginger', price: 7.99)
-      @menu.menu_entries.create(menu_item: @menu_item)
+                                   description: 'Frozen strawberries blended with orange juice and ginger')
+      @menu.menu_entries.create(menu_item: @menu_item, price: 7.99)
     end
 
     it 'deletes associated menu_items when destroyed' do
