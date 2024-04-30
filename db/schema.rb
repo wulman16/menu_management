@@ -10,13 +10,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.1].define(version: 2024_04_30_173323) do
+ActiveRecord::Schema[7.1].define(version: 2024_04_30_194043) do
   create_table "menu_entries", force: :cascade do |t|
     t.integer "menu_id", null: false
     t.integer "menu_item_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.decimal "price", precision: 10, scale: 2
+    t.index ["menu_id", "menu_item_id"], name: "index_menu_entries_on_menu_id_and_menu_item_id", unique: true
     t.index ["menu_id"], name: "index_menu_entries_on_menu_id"
     t.index ["menu_item_id"], name: "index_menu_entries_on_menu_item_id"
   end
