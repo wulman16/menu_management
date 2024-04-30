@@ -110,8 +110,31 @@ RSpec.describe 'Restaurants', type: :request do
   end
 
   describe 'DELETE /restaurants/:id' do
+    let!(:restaurant1) { create(:restaurant) }
+    let!(:restaurant2) { create(:restaurant) }
+    let!(:menu1) { create(:menu, restaurant: restaurant1) }
+    let!(:menu2) { create(:menu, restaurant: restaurant2) }
+    let!(:menu_item1) { create(:menu_item) }  # Exclusive to restaurant1
+    let!(:menu_item2) { create(:menu_item) }  # Shared between restaurant1 and restaurant2
+    let!(:entry1) { create(:menu_entry, menu: menu1, menu_item: menu_item1) }
+    let!(:entry2) { create(:menu_entry, menu: menu1, menu_item: menu_item2) }
+    let!(:entry3) { create(:menu_entry, menu: menu2, menu_item: menu_item2) } # Shared item
+
+    before { delete "/restaurants/#{restaurant1.id}" }
+
     context 'when the restaurant exists' do
-      before { delete "/restaurants/#{restaurant_id}" }
+      it 'deletes the restaurant and its associated menus' do
+        expect(Restaurant.exists?(restaurant1.id)).to be_falsey
+        expect(Menu.exists?(menu1.id)).to be_falsey
+      end
+
+      it 'deletes menu items exclusive to the deleted restaurant' do
+        expect(MenuItem.exists?(menu_item1.id)).to be_falsey
+      end
+
+      it 'does not delete shared menu items still linked to active restaurants' do
+        expect(MenuItem.exists?(menu_item2.id)).to be_truthy
+      end
 
       it 'returns status code 204' do
         expect(response).to have_http_status(204)
