@@ -2,29 +2,29 @@ require 'rails_helper'
 
 RSpec.describe 'Menus', type: :request do
   let!(:restaurant) { create(:restaurant) }
-  let!(:menus) { [
-    create(:menu, :lunch, restaurant: restaurant),
-    create(:menu, :dinner, restaurant: restaurant),
-    create(:menu, :drinks, restaurant: restaurant)
-  ] }
+  let!(:menus) do
+    [
+      create(:menu, :lunch, restaurant:),
+      create(:menu, :dinner, restaurant:),
+      create(:menu, :drinks, restaurant:)
+    ]
+  end
   let(:menu_id) { menus.first.id }
-  
+  let(:menu_items) { create_list(:menu_item, 3) }
+
   before do
     menus.each do |menu|
-      create_list(:menu_item, 3, menu: menu)
+      menu_items.each do |menu_item|
+        create(:menu_entry, menu:, menu_item:)
+      end
     end
   end
-  
-  describe 'GET /menus' do
-    before { get '/menus' }
 
-    it 'returns menus with associated menu items' do
-      expect(json).not_to be_empty
+  describe 'GET restaurants/:id/menus/' do
+    before { get "/restaurants/#{restaurant.id}/menus" }
+
+    it 'returns menus' do
       expect(json.size).to eq(3)
-      
-      json.each do |menu|
-        expect(menu['menu_items']).not_to be_empty
-      end
     end
 
     it 'returns status code 200' do
@@ -32,14 +32,15 @@ RSpec.describe 'Menus', type: :request do
     end
   end
 
-  describe 'GET /menus/:id' do
-    before { get "/menus/#{menu_id}" }
+  describe 'GET restaurants/:id/menus/:id' do
+    before { get "/restaurants/#{restaurant.id}/menus/#{menu_id}" }
 
     context 'when the record exists' do
       it 'returns the menu with associated menu items' do
         expect(json).not_to be_empty
         expect(json['id']).to eq(menu_id)
         expect(json['menu_items']).not_to be_empty
+        expect(json['menu_items'].size).to eq(3)
       end
 
       it 'returns status code 200' do
@@ -59,12 +60,12 @@ RSpec.describe 'Menus', type: :request do
       end
     end
   end
-  
-  describe 'POST /menus' do
-    let(:valid_attributes) { { menu: { name: 'Breakfast', restaurant_id: 1 } } }
+
+  describe 'POST /resturants/:id/menus' do
+    let(:valid_attributes) { { menu: { name: 'Breakfast' } } }
 
     context 'when the request is valid' do
-      before { post '/menus', params: valid_attributes }
+      before { post "/restaurants/#{restaurant.id}/menus", params: valid_attributes }
 
       it 'creates a menu' do
         expect(json['name']).to eq('Breakfast')
@@ -76,7 +77,7 @@ RSpec.describe 'Menus', type: :request do
     end
 
     context 'when the request is invalid' do
-      before { post '/menus', params: { menu: { name: '' } } }
+      before { post "/restaurants/#{restaurant.id}/menus", params: { menu: { name: '' } } }
 
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
@@ -87,12 +88,12 @@ RSpec.describe 'Menus', type: :request do
       end
     end
   end
-  
-  describe 'PUT /menus/:id' do
+
+  describe 'PUT /restaurants/:id/menus/:id' do
     let(:valid_attributes) { { menu: { name: 'Breakfast' } } }
 
     context 'when the menu exists' do
-      before { put "/menus/#{menu_id}", params: valid_attributes }
+      before { put "/restaurants/#{restaurant.id}/menus/#{menu_id}", params: valid_attributes }
 
       it 'updates the menu with associated menu items' do
         expect(Menu.find(menu_id).name).to eq('Breakfast')
@@ -107,7 +108,7 @@ RSpec.describe 'Menus', type: :request do
     context 'when the menu does not exist' do
       let(:menu_id) { 0 }
 
-      before { put "/menus/#{menu_id}", params: valid_attributes }
+      before { put "/restaurants/#{restaurant.id}/menus/#{menu_id}", params: valid_attributes }
 
       it 'returns status code 404' do
         expect(response).to have_http_status(404)
@@ -117,24 +118,24 @@ RSpec.describe 'Menus', type: :request do
         expect(response.body).to match(/Couldn't find Menu/)
       end
     end
-    
+
     context 'with invalid attributes' do
       let(:invalid_attributes) { { menu: { name: '' } } }
-      before { put "/menus/#{menu_id}", params: invalid_attributes }
-  
+      before { put "/restaurants/#{restaurant.id}/menus/#{menu_id}", params: invalid_attributes }
+
       it 'returns status code 422' do
         expect(response).to have_http_status(422)
       end
-  
+
       it 'returns a validation failure message' do
         expect(json['name']).to include("can't be blank")
       end
     end
   end
-  
-  describe 'DELETE /menus/:id' do
+
+  describe 'DELETE /restaurants/:id/menus/:id' do
     context 'when the menu exists' do
-      before { delete "/menus/#{menu_id}" }
+      before { delete "/restaurants/#{restaurant.id}/menus/#{menu_id}" }
 
       it 'deletes the menu' do
         expect(Menu.exists?(menu_id)).to be_falsey
@@ -148,7 +149,7 @@ RSpec.describe 'Menus', type: :request do
     context 'when the menu does not exist' do
       let(:menu_id) { 0 }
 
-      before { delete "/menus/#{menu_id}" }
+      before { delete "/restaurants/#{restaurant.id}/menus/#{menu_id}" }
 
       it 'returns status code 404' do
         expect(response).to have_http_status(404)

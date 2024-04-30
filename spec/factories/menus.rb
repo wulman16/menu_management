@@ -1,7 +1,7 @@
 FactoryBot.define do
   factory :menu do
     name { 'Menu' }
-    
+
     trait :lunch do
       name { 'Lunch' }
     end

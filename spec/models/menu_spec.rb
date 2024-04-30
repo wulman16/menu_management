@@ -9,7 +9,7 @@ RSpec.describe Menu, type: :model do
     menu = Menu.new(name: 'Lunch')
     expect(menu.name).to eq('Lunch')
   end
-  
+
   describe 'validations' do
     it 'validates presence of name' do
       menu = Menu.new(name: nil)
@@ -20,7 +20,7 @@ RSpec.describe Menu, type: :model do
     it 'validates length of name' do
       menu = Menu.new(name: 'a' * 101)
       expect(menu.valid?).to be false
-      expect(menu.errors[:name]).to include("is too long (maximum is 100 characters)")
+      expect(menu.errors[:name]).to include('is too long (maximum is 100 characters)')
     end
   end
 
@@ -28,20 +28,21 @@ RSpec.describe Menu, type: :model do
     before(:each) do
       @restaurant = Restaurant.create(name: 'East Pole Coffee')
       @menu = @restaurant.menus.create(name: 'Hot Coffees')
+      @menu_item = MenuItem.create(name: 'Strawberry Smoothie',
+                                   description: 'Frozen strawberries blended with orange juice and ginger', price: 7.99)
+      @menu.menu_entries.create(menu_item: @menu_item)
     end
-    
+
     it 'belongs to a restaurant' do
       expect(@menu.restaurant).to eq(@restaurant)
     end
-    
-    it 'has many menu_items' do
-      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
-      expect(@menu.menu_items.size).to eq(1)
+
+    it 'has many menu_items through menu_entries' do
+      expect(@menu.menu_items.first).to eq(@menu_item)
     end
 
-    it 'destroys menu_items when destroyed' do
-      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
-      expect { @menu.destroy }.to change(MenuItem, :count).by(-1)
+    it 'deletes associated menu_entries when destroyed' do
+      expect { @menu.destroy }.to change(MenuEntry, :count).by(-1)
     end
   end
 
@@ -49,11 +50,13 @@ RSpec.describe Menu, type: :model do
     before do
       @restaurant = Restaurant.create(name: 'East Pole Coffee')
       @menu = @restaurant.menus.create(name: 'Hot Coffees')
-      @menu.menu_items.create(name: 'Strawberry Smoothie', price: 7.99)
+      @menu_item = MenuItem.create(name: 'Strawberry Smoothie',
+                                   description: 'Frozen strawberries blended with orange juice and ginger', price: 7.99)
+      @menu.menu_entries.create(menu_item: @menu_item)
     end
 
     it 'deletes associated menu_items when destroyed' do
-      expect { @menu.destroy }.to change { MenuItem.count }.by(-1)
+      expect { @menu.destroy }.to change { MenuEntry.count }.by(-1)
     end
   end
 end
