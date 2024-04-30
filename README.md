@@ -57,7 +57,7 @@ You can interact with the API using a tool like [Postman](https://www.postman.co
     - GET `/restaurants/:restaurant_id/menus/:id`
     - Returns detailed information about a specific menu, including menu entries and menu items.
 * Create a New Menu
-    - POST /restaurants/:restaurant_id/menus
+    - POST `/restaurants/:restaurant_id/menus`
     - Parameters: name (required)
     - Creates a new menu under the specified restaurant and returns the created menu data with HTTP status 201 Created.
 * Update a Menu
@@ -104,3 +104,5 @@ You can interact with the API using a tool like [Postman](https://www.postman.co
 * A single `Menu` cannot have the same `MenuItem` more than once.
 * A `MenuItem` could have a different price depending on what `Menu` it's on. For example, a lunch menu might list a dish from a dinner menu at the same restaurant but at a cheaper price. For this reason, `MenuItem` has only `name` and `description` while the join table `MenuEntry` is responsible for `price`.
 * `MenuItems` can exist independently of `Restaurants` and `Menus`. There are drawbacks to having "orphaned" items like this, but it also allows for the periodic addition and removal of certain `MenuItems` by season, availability, etc.
+* Prices on `MenuEntries` are formatted with USD in mind. Currencies that don't use two decimal places would not be supported in this imeplementation.
+* I did not get to Level 3 of the requirements.
