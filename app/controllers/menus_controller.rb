@@ -29,6 +29,11 @@ class MenusController < ApplicationController
   end
 
   def destroy
+    # Delete menu items not associated with any other menus
+    @menu.menu_items.each do |menu_item|
+      menu_item.destroy if menu_item.menus.count == 1
+    end
+
     @menu.destroy
     head :no_content
   end

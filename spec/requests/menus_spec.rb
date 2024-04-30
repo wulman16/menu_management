@@ -135,10 +135,24 @@ RSpec.describe 'Menus', type: :request do
 
   describe 'DELETE /restaurants/:id/menus/:id' do
     context 'when the menu exists' do
+      let!(:menu_item1) { create(:menu_item) }
+      let!(:menu_item2) { create(:menu_item) }
+      let!(:menu_entry1) { create(:menu_entry, menu: menus.first, menu_item: menu_item1) }
+      let!(:menu_entry2) { create(:menu_entry, menu: menus.second, menu_item: menu_item2) }
+      let!(:menu_entry3) { create(:menu_entry, menu: menus.first, menu_item: menu_item2) }
+
       before { delete "/restaurants/#{restaurant.id}/menus/#{menu_id}" }
 
       it 'deletes the menu' do
         expect(Menu.exists?(menu_id)).to be_falsey
+      end
+
+      it 'deletes menu items not associated with any other menus' do
+        expect(MenuItem.exists?(menu_item1.id)).to be_falsey
+      end
+
+      it 'does not delete menu items if they still exist on another menu' do
+        expect(MenuItem.exists?(menu_item2.id)).to be_truthy
       end
 
       it 'returns status code 204' do

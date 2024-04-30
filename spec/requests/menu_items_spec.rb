@@ -96,6 +96,22 @@ RSpec.describe 'MenuItems', type: :request do
 
       it 'associates the existing menu item with the new menu' do
         expect(json['name']).to eq('Black Bean Burger')
+        expect(Menu.find(second_menu_id).menu_items).to include(MenuItem.find_by(name: 'Black Bean Burger'))
+      end
+    end
+
+    context 'when the menu item already exists on the same menu' do
+      before do
+        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
+        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
+      end
+
+      it 'returns status code 409' do
+        expect(response).to have_http_status(409)
+      end
+
+      it 'returns an error message indicating the menu item already exists on the menu' do
+        expect(json['error']).to eq('Menu item already exists on this menu.')
       end
     end
   end
