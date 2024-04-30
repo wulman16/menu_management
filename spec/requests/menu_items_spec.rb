@@ -3,7 +3,9 @@ require 'rails_helper'
 RSpec.describe 'MenuItems', type: :request do
   let!(:restaurant) { create(:restaurant) }
   let!(:menu) { create(:menu, :lunch, restaurant:) }
+  let!(:second_menu) { create(:menu, :dinner, restaurant:) }
   let(:menu_id) { menu.id }
+  let(:second_menu_id) { second_menu.id }
   let(:menu_items) { create_list(:menu_item, 3) }
   let(:menu_item_id) { menu_items.first.id }
 
@@ -83,6 +85,17 @@ RSpec.describe 'MenuItems', type: :request do
       it 'returns a validation failure message' do
         expect(json['price']).to include("can't be blank")
         expect(json['price']).to include('is not a number')
+      end
+    end
+
+    context 'when the menu item already exists on another menu' do
+      before do
+        post "/restaurants/#{restaurant.id}/menus/#{menu_id}/menu_items", params: valid_attributes
+        post "/restaurants/#{restaurant.id}/menus/#{second_menu_id}/menu_items", params: valid_attributes
+      end
+
+      it 'associates the existing menu item with the new menu' do
+        expect(json['name']).to eq('Black Bean Burger')
       end
     end
   end
